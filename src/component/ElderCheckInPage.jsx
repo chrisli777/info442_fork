@@ -193,7 +193,45 @@ export default function ElderDashboard() {
   const buttonClass = highContrast ? "bg-yellow-500 text-black hover:bg-yellow-400" : ""
 
   // Add screen reader announcements
+  
+  // Text-to-speech function
+  const speakText = (text) => {
+    if (!screenReaderMode) return;
+
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      window.speechSynthesis.speak(utterance);
+    } else {
+      console.log("Text-to-speech not supported in this browser");
+    }
+  };
+
   useEffect(() => {
+    if (screenReaderMode) {
+      document.querySelectorAll("[aria-label]").forEach((el) => {
+        el.setAttribute("role", "button");
+      });
+
+      document.querySelectorAll(".sr-clickable").forEach((el) => {
+        el.classList.add("cursor-pointer");
+        if (!el.getAttribute("tabindex")) {
+          el.setAttribute("tabindex", "0");
+        }
+        el.addEventListener("click", () => speakText(el.innerText));
+        el.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") speakText(el.innerText);
+        });
+      });
+
+      speakText("Screen reader mode is now active. Click on any text to have it read aloud.");
+    }
+  }, [screenReaderMode]);
+
+useEffect(() => {
     if (screenReaderMode) {
       document.querySelectorAll("[aria-label]").forEach((el) => {
         el.setAttribute("role", "button")
@@ -209,9 +247,9 @@ export default function ElderDashboard() {
 
   return (
     <div className={`min-h-screen bg-gray-50 p-4 ${largeText ? "text-lg" : ""}`}>
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto sr-clickable">
         {/* Accessibility Controls */}
-        <div className="flex flex-wrap gap-2 mb-6 justify-end">
+        <div className="flex flex-wrap gap-2 mb-6 justify-end sr-clickable">
           <button
             onClick={() => setLargeText(!largeText)}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
@@ -220,7 +258,7 @@ export default function ElderDashboard() {
             aria-label="Toggle larger text"
           >
             <Type size={18} />
-            <span className="hidden sm:inline">Larger Text</span>
+            <span className="hidden sm:inline sr-clickable">Larger Text</span>
           </button>
 
           <button
@@ -231,7 +269,7 @@ export default function ElderDashboard() {
             aria-label="Toggle high contrast"
           >
             <Sun size={18} />
-            <span className="hidden sm:inline">High Contrast</span>
+            <span className="hidden sm:inline sr-clickable">High Contrast</span>
           </button>
 
           <button
@@ -242,13 +280,13 @@ export default function ElderDashboard() {
             aria-label="Toggle screen reader mode"
           >
             <Eye size={18} />
-            <span className="hidden sm:inline">Screen Reader</span>
+            <span className="hidden sm:inline sr-clickable">Screen Reader</span>
           </button>
         </div>
 
         {/* Dashboard Tabs */}
-        <div className="bg-white rounded-xl shadow-lg mb-6 p-1">
-          <div className="flex">
+        <div className="bg-white rounded-xl shadow-lg mb-6 p-1 sr-clickable">
+          <div className="flex sr-clickable">
             <button
               className={`flex-1 py-3 px-4 rounded-lg font-medium ${
                 activeTab === "dashboard" ? "bg-sky-100 text-sky-800" : "text-gray-600 hover:bg-gray-100"
@@ -263,18 +301,18 @@ export default function ElderDashboard() {
               }`}
               onClick={() => setActiveTab("chat")}
             >
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-2 sr-clickable">
                 <MessageCircle size={18} />
-                <span>Chat</span>
+                <span className="sr-clickable">Chat</span>
               </div>
             </button>
           </div>
         </div>
 
         {activeTab === "dashboard" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sr-clickable">
             {/* Left Column: Health Info and Medication */}
-            <div className="space-y-6">
+            <div className="space-y-6 sr-clickable">
               {/* My Profile Section */}
               <div className={`rounded-xl shadow-lg p-4 ${containerClass} border-2`}>
                 <h2
@@ -283,37 +321,37 @@ export default function ElderDashboard() {
                   My Profile
                 </h2>
 
-                <div className="grid grid-cols-2 gap-2 mb-3">
+                <div className="grid grid-cols-2 gap-2 mb-3 sr-clickable">
                   <div className={`p-2 rounded-lg ${highContrast ? "bg-gray-800" : "bg-sky-50"}`}>
-                    <div className="text-sm font-medium mb-0.5">Full Name</div>
-                    <p className="text-base font-bold">Martha Johnson</p>
+                    <div className="text-sm font-medium mb-0.5 sr-clickable">Full Name</div>
+                    <p className="text-base font-bold sr-clickable">Martha Johnson</p>
                   </div>
 
                   <div className={`p-2 rounded-lg ${highContrast ? "bg-gray-800" : "bg-sky-50"}`}>
-                    <div className="text-sm font-medium mb-0.5">Age</div>
-                    <p className="text-base font-bold">78 years</p>
+                    <div className="text-sm font-medium mb-0.5 sr-clickable">Age</div>
+                    <p className="text-base font-bold sr-clickable">78 years</p>
                   </div>
 
                   <div className={`p-2 rounded-lg ${highContrast ? "bg-gray-800" : "bg-sky-50"}`}>
-                    <div className="text-sm font-medium mb-0.5">Room Number</div>
-                    <p className="text-base font-bold">101</p>
+                    <div className="text-sm font-medium mb-0.5 sr-clickable">Room Number</div>
+                    <p className="text-base font-bold sr-clickable">101</p>
                   </div>
 
                   <div className={`p-2 rounded-lg ${highContrast ? "bg-gray-800" : "bg-sky-50"}`}>
-                    <div className="text-sm font-medium mb-0.5">Emergency Contact</div>
-                    <p className="text-base font-bold">John Johnson (Son)</p>
+                    <div className="text-sm font-medium mb-0.5 sr-clickable">Emergency Contact</div>
+                    <p className="text-base font-bold sr-clickable">John Johnson (Son)</p>
                   </div>
                 </div>
 
-                <div className="space-y-2 mb-2">
+                <div className="space-y-2 mb-2 sr-clickable">
                   <div className={`p-2 rounded-lg ${highContrast ? "bg-gray-800" : "bg-sky-50"}`}>
-                    <div className="text-sm font-medium mb-0.5">Medical Conditions</div>
-                    <p className="text-sm">Hypertension, Type 2 Diabetes, Mild Arthritis</p>
+                    <div className="text-sm font-medium mb-0.5 sr-clickable">Medical Conditions</div>
+                    <p className="text-sm sr-clickable">Hypertension, Type 2 Diabetes, Mild Arthritis</p>
                   </div>
 
                   <div className={`p-2 rounded-lg ${highContrast ? "bg-gray-800" : "bg-sky-50"}`}>
-                    <div className="text-sm font-medium mb-0.5">Preferences</div>
-                    <p className="text-sm">
+                    <div className="text-sm font-medium mb-0.5 sr-clickable">Preferences</div>
+                    <p className="text-sm sr-clickable">
                       Enjoys reading, classical music, and afternoon walks. Prefers to eat dinner before 6 PM.
                     </p>
                   </div>
@@ -332,7 +370,7 @@ export default function ElderDashboard() {
                   Medication Reminders
                 </h2>
 
-                <div className="space-y-4">
+                <div className="space-y-4 sr-clickable">
                   {medications.map((med, index) => (
                     <div
                       key={index}
@@ -346,21 +384,21 @@ export default function ElderDashboard() {
                             : "bg-white border-gray-200"
                       }`}
                     >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <div className="flex items-center gap-2">
+                      <div className="flex justify-between items-center sr-clickable">
+                        <div className="sr-clickable">
+                          <div className="flex items-center gap-2 sr-clickable">
                             <Pill
                               size={20}
                               className={med.due ? (highContrast ? "text-black" : "text-amber-500") : ""}
                             />
                             <span className={`font-bold ${largeText ? "text-xl" : "text-lg"}`}>{med.name}</span>
                             {med.due && (
-                              <span className="flex items-center text-sm font-medium px-2 py-1 rounded-full bg-amber-100 text-amber-800">
+                              <span className="flex items-center text-sm font-medium px-2 py-1 rounded-full bg-amber-100 text-amber-800 sr-clickable">
                                 <Clock size={14} className="mr-1" /> Due now
                               </span>
                             )}
                           </div>
-                          <p className="ml-7">
+                          <p className="ml-7 sr-clickable">
                             {med.dosage} - {med.time}
                           </p>
                         </div>
@@ -398,7 +436,7 @@ export default function ElderDashboard() {
               {!isSubmitted ? (
                 <>
                   {/* Mood Check-in Section */}
-                  <div className="mood-section mb-8">
+                  <div className="mood-section mb-8 sr-clickable">
                     <h2
                       className={`text-2xl ${largeText ? "text-3xl" : ""} font-bold mb-6 text-center ${highContrast ? "text-yellow-400" : "text-sky-800"}`}
                     >
@@ -437,14 +475,14 @@ export default function ElderDashboard() {
                     </div>
 
                     {showMoodError && (
-                      <p className="text-red-500 text-center mt-2" role="alert">
+                      <p className="text-red-500 text-center mt-2 sr-clickable" role="alert">
                         Please select how you're feeling today
                       </p>
                     )}
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                  <div className="flex flex-col sm:flex-row gap-4 mb-8 sr-clickable">
                     <button
                       className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl ${
                         highContrast
@@ -455,7 +493,7 @@ export default function ElderDashboard() {
                       aria-label="Request help"
                     >
                       <HelpCircle size={largeText ? 24 : 20} />
-                      <span>Need something?</span>
+                      <span className="sr-clickable">Need something?</span>
                     </button>
 
                     <button
@@ -474,13 +512,13 @@ export default function ElderDashboard() {
                       aria-label="Record voice message"
                     >
                       <Mic size={largeText ? 24 : 20} />
-                      <span>Want to talk? {recordingText}</span>
+                      <span className="sr-clickable">Want to talk? {recordingText}</span>
                     </button>
                   </div>
 
                   {/* Additional Inputs */}
-                  <div className="mb-8">
-                    <div className="mb-6">
+                  <div className="mb-8 sr-clickable">
+                    <div className="mb-6 sr-clickable">
                       <label
                         htmlFor="noteInput"
                         className={`block mb-2 font-medium ${highContrast ? "text-yellow-400" : "text-gray-700"} ${largeText ? "text-xl" : ""}`}
@@ -500,14 +538,14 @@ export default function ElderDashboard() {
                       />
                     </div>
 
-                    <div>
+                    <div className="sr-clickable">
                       <label
                         className={`block mb-2 font-medium ${highContrast ? "text-yellow-400" : "text-gray-700"} ${largeText ? "text-xl" : ""}`}
                       >
                         Add a photo (optional):
                       </label>
 
-                      <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="flex flex-col sm:flex-row gap-3 sr-clickable">
                         <button
                           className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg ${
                             highContrast
@@ -518,7 +556,7 @@ export default function ElderDashboard() {
                           aria-label="Upload photo from device"
                         >
                           <Upload size={largeText ? 24 : 20} />
-                          <span>Upload Photo</span>
+                          <span className="sr-clickable">Upload Photo</span>
                         </button>
 
                         <button
@@ -531,7 +569,7 @@ export default function ElderDashboard() {
                           aria-label="Take a new photo with camera"
                         >
                           <Camera size={largeText ? 24 : 20} />
-                          <span>Take Photo</span>
+                          <span className="sr-clickable">Take Photo</span>
                         </button>
                       </div>
 
@@ -545,7 +583,7 @@ export default function ElderDashboard() {
                       />
 
                       {photoPreview && (
-                        <div className="mt-4">
+                        <div className="mt-4 sr-clickable">
                           <img
                             src={photoPreview || "/placeholder.svg"}
                             alt="Preview of uploaded photo"
@@ -566,7 +604,7 @@ export default function ElderDashboard() {
                     onClick={handleSubmit}
                     aria-label="Submit your check-in"
                   >
-                    <span className="flex items-center justify-center gap-2">
+                    <span className="flex items-center justify-center gap-2 sr-clickable">
                       <Send size={largeText ? 24 : 20} />
                       Submit Check-in
                     </span>
@@ -574,13 +612,13 @@ export default function ElderDashboard() {
                 </>
               ) : (
                 /* Success Message */
-                <div className="text-center py-8">
+                <div className="text-center py-8 sr-clickable">
                   <div
                     className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 ${
                       highContrast ? "bg-yellow-500 text-black" : "bg-green-100 text-green-600"
                     }`}
                   >
-                    <span className="text-4xl" role="img" aria-label="Success">
+                    <span className="text-4xl sr-clickable" role="img" aria-label="Success">
                       ✓
                     </span>
                   </div>
@@ -612,7 +650,7 @@ export default function ElderDashboard() {
           </div>
         ) : (
           /* Chat Tab */
-          <div className="h-[calc(100vh-200px)]">
+          <div className="h-[calc(100vh-200px)] sr-clickable">
             <Chat />
           </div>
         )}
@@ -638,7 +676,7 @@ function MoodOption({ emoji, label, isSelected, onClick, highContrast, largeText
       aria-label={`Select mood: ${label}`}
       aria-pressed={isSelected}
     >
-      <div className="mb-2">{emoji}</div>
+      <div className="mb-2 sr-clickable">{emoji}</div>
       <span className={`font-medium ${largeText ? "text-xl" : ""}`}>{label}</span>
     </button>
   )
